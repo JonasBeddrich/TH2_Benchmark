@@ -74,7 +74,8 @@ public:
 	}
 
 	double get_P0 (double x) const {
-		return h0 + (LX-x) * hh; 
+		// return h0 + (LX-x) * hh; 
+		return h0; 
 	}
 
 	double get_compressibility() const {

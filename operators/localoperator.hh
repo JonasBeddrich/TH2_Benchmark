@@ -116,6 +116,7 @@ public:
 		double Sw = param.ice.FreezingCurve(T); 
 		double Sw_old = param.ice.FreezingCurve(T_old); 
 		double Ci = 1-Sw; 
+		double dSwdT = param.ice.d_dT_FreezingCurve(T); 
 
 		// load parameters 
 		double beta = param.parameter.get_compressibility(); 
@@ -136,23 +137,16 @@ public:
 		double rho_C_eq = porosity * (Sw * rho_w * C_w + Ci * rho_i * C_i) 
 							+ (1 - porosity) * rho_s * C_s; 
 
-		/* The following terms are mixed. They include derivatives of time dependent terms and time dependent terms
-		therefore they can not be handled by the timeoperator. */
-		
 		// Flow Equation 
 		double tmp = 0.; 
 		tmp -= Sw *  porosity * rho_w * g * beta * (P - P_old) / (*dt);
 		tmp += porosity * (rho_i - rho_w) / rho_w * (Sw - Sw_old) / (*dt); 
-
-		// std::cout << "FLOW: " << tmp << std::endl;  
 		r.accumulate(lfsu.child(param.index.Eq_flux), 0, tmp * cell_volume);
 
 		// Heat Equation 
 		tmp = 0.; 
 		tmp -= rho_C_eq * (T - T_old) / (*dt); 
 		tmp -= porosity * rho_i * Lf * (Sw - Sw_old) / (*dt); 
-	
-		// std::cout << "HEAT: " << tmp << std::endl; 
 		r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume);
 	}
 
@@ -351,10 +345,7 @@ public:
 		} 
 
 		if (bctype[Indices::BC_heat] == Indices::dirichletT) {
-			grad_T = (bcvalue[Indices::BC_heat] - T) / distance; 
-			// std::cout << grad_T << std::endl; 
-			// std::cout << bcvalue[Indices::BC_heat] << std::endl; 
-			// std::cout << T << std::endl; 
+			grad_T = (bcvalue[Indices::BC_heat] - T) / distance;
 		} else if (bctype[Indices::BC_heat] == Indices::neumannQ) {
 			grad_T = bcvalue[Indices::BC_heat]; 
 		}

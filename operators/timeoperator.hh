@@ -79,12 +79,13 @@ public:
 			// CURRENTLY NOT IN USE 
 
 			// FLOW EQUATION 
-			// double tmp = 0.; 
+			double tmp = 0.; 
 			// r.accumulate(lfsu.child(param.index.Eq_flux), 0, tmp * cell_volume);
 
 			// HEAT EQUATION  
-			// tmp = 0.; 
+			tmp = 0.; 
 			// tmp -= rho_i * Lf * Sw; 
-			// r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume); 
+			// tmp -= rhoC_eq * T; 
+			r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume); 
 	}	
 };
