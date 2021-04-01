@@ -228,21 +228,23 @@ public:
 		double krw_s = param.hydraulicProperty.krw(porosity, Sw_s);
 		double krw_n = param.hydraulicProperty.krw(porosity, Sw_n);
 		
-		double KH_s = krw_s * kint * rho_w * g / mu; 
-		double KH_n = krw_n * kint * rho_w * g / mu; 
+		double KH_s = krw_s * kint * rho_w * g / mu;
+		double KH_n = krw_n * kint * rho_w * g / mu;
 		double KH = 2 * KH_s * KH_n / (KH_s + KH_n); 
-		
+
 		double T;   
 		// upwinding with regard to pressure 
-		if(grad_P > 0){
-			T = T_s; 
+		// grad_P < 0 means flux from x_s to x_n
+		if(grad_P < 0){
+			T = T_s;
 		} else {
-			T = T_n; 
+			T = T_n;
 		}
 		
 		double lambda_eq; 
 		// upwinding with regard to temperature 
-		if(grad_T > 0) {
+		// grad_T < 0 means flux from x_s to x_n
+		if(grad_T < 0) {
 			lambda_eq = porosity * (Sw_s * lambda_w + Ci_s * lambda_i) + (1-porosity) * lambda_s; 
 		} else {
 			lambda_eq = porosity * (Sw_n * lambda_w + Ci_n * lambda_i) + (1-porosity) * lambda_s; 
