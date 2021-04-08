@@ -213,7 +213,7 @@ void driver(const GV &gv, 				// GridView
 	VTKWRITER vtkwriter(gv, Dune::refinementIntervals(subsampling));
 	using VTKSEQUENCEWRITER = Dune::VTKSequenceWriter<GV>;
 	VTKSEQUENCEWRITER vtkSequenceWriter(std::make_shared < VTKWRITER > (vtkwriter), fileName, pathName, "");
-	// TODO: check whether I should use u_new or u_old here ... 
+	// TODO: check whether I should use u_new or u_old here ... doesn't seem to matter at all 
 	Dune::PDELab::addSolutionToVTKWriter(vtkSequenceWriter, gfs, u_old);
 	vtkSequenceWriter.write(time, Dune::VTK::appendedraw);
 
@@ -222,9 +222,7 @@ void driver(const GV &gv, 				// GridView
 	/***********************************************/
 
 	int opcount = 1;
-	double timecount = time;
 	double dtLast = dtstart;
-	int dtFlag = 0;
 	bool exceptionCaught = false;
 	bool cutOutputFlag = false; 
 	int newton_iterations = 0;
@@ -277,7 +275,6 @@ void driver(const GV &gv, 				// GridView
 				}
 
 				continue;
-
 			} else {
 				if (helper.rank() == 0) {
 					std::cout << "ABORTING, due to DUNE error: " << e
@@ -338,8 +335,6 @@ void driver(const GV &gv, 				// GridView
 						<< std::endl;
 				std::cout << std::flush;
 			}
-
-			timecount = time;
 			opcount = opcount + 1;
 		}
 
@@ -386,9 +381,7 @@ void driver(const GV &gv, 				// GridView
 						<< dt * Xc_t << std::endl;
 				std::cout << std::flush;
 			}
-			dtFlag = 0;
 		}
-		dtFlag += 1;
 
 		if (helper.rank() == 0) {
 			std::cout << " , dt  : " << dt * Xc_t << std::endl;

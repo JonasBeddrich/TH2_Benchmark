@@ -19,6 +19,7 @@ private:
 	const static int dim = GV::dimension;
 
 	double LX; 
+	double NX; 
 
 	// parameters 
 	double beta; // compressibility 
@@ -43,7 +44,7 @@ public:
 
 		// Grid 
 		LX = ptree.get("grid.yasp.LX", (double) 3.); 
-
+		NX = ptree.get("grid.yasp.NX", (double) 300.); 
 		// parameters 
 		beta = ptree.get("parameters.beta", (double) 1.e-8); 
 		gravitation = ptree.get("parameters.gravitation", (double) 9.81); 
@@ -62,7 +63,9 @@ public:
 	}
 
 	double get_P_left() const {
-		return LX * hh + h0; 
+		// slope case study 
+		return h0; 
+		// return LX * hh + h0; 
 	}
 
 	double get_T0_ice () const {
@@ -74,8 +77,8 @@ public:
 	}
 
 	double get_P0 (double x) const {
-		// return h0 + (LX-x) * hh; 
-		return h0; 
+		return h0 + (LX-x) * hh; 
+		// return h0; 
 	}
 
 	double get_compressibility() const {
@@ -84,6 +87,14 @@ public:
 
 	double get_gravitation() const {
 		return gravitation; 
+	}
+
+	double get_hydraulic_gradient() const {
+		return hh; 
+	}
+
+	double get_NX() const {
+		return NX; 
 	}
 };
 
@@ -323,6 +334,9 @@ public:
 	double FreezingCurve(double T) const {
 		double Sw_res = 0.05; 
 		double W = 0.5; 
+		// double W = 0.6; 
+		// double W = 0.05; 
+		// double W = 1.87; 
 
 		double tmp = (T - FreezingPointTemperature()) / W; 
 		tmp *= tmp; 
@@ -335,21 +349,17 @@ public:
 		}
 	}
 
-	double d_dT_FreezingCurve(double T) const {
+	double dFreezingCurve_dT(double T) const {
 		double Sw_res = 0.05; 
 		double W = 0.5; 
-
-		// prefactor 
-		double pf = -(1-Sw_res); 
-		pf *= 2 * (T - FreezingPointTemperature()) / W / W; 
 		
-		double tmp = (T - FreezingPointTemperature()) / W; 
-		tmp *= tmp; 
-
+		double tmp = ((T - FreezingPointTemperature()) / W ) * ((T - FreezingPointTemperature()) / W ); 
+		double dSFC_dT = 2 * (1-Sw_res) * std::exp(-tmp) * (T - FreezingPointTemperature()) / W / W; 
+		
 		if (T >= FreezingPointTemperature()){
 			return 0; 
 		} else {
-			return pf * std::exp(-tmp); 
+			return - dSFC_dT; 
 		}
 	}
 };
@@ -485,8 +495,8 @@ public:
 	double krw (double porosity, double Sw) const {
 		double Omega = 50; 
 		double krw_min = 1.e-6; 
-		double krw = std::pow(10, -Omega * porosity * (1-Sw)); 
-		return std::max (krw, krw_min); 
+		double krw = std::pow(10, -Omega * porosity * (1 - Sw)); 
+		return std::max(krw, krw_min); 
 	}
 };
 

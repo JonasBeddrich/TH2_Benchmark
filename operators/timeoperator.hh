@@ -71,21 +71,10 @@ public:
 			double porosity = param.soil.Porosity();
 			
 			// calculate Parameters 
-			double rhoC_eq = porosity * (Sw * rho_w * C_w + Ci * rho_i * C_i) 
-							+ (1 - porosity) * rho_s * C_s; 
-			
-			/* For the following terms the time derivative can be pulled out in front of the integral.*/
+			double rhoC_eq = porosity * (Sw * rho_w * C_w + Ci * rho_i * C_i) + (1 - porosity) * rho_s * C_s; 
 
 			// CURRENTLY NOT IN USE 
-
-			// FLOW EQUATION 
-			double tmp = 0.; 
-			// r.accumulate(lfsu.child(param.index.Eq_flux), 0, tmp * cell_volume);
-
-			// HEAT EQUATION  
-			tmp = 0.; 
-			// tmp -= rho_i * Lf * Sw; 
-			// tmp -= rhoC_eq * T; 
-			r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume); 
+			
+			// r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume); 
 	}	
 };

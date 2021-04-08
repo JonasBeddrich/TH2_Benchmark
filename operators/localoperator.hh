@@ -116,7 +116,6 @@ public:
 		double Sw = param.ice.FreezingCurve(T); 
 		double Sw_old = param.ice.FreezingCurve(T_old); 
 		double Ci = 1-Sw; 
-		double dSwdT = param.ice.d_dT_FreezingCurve(T); 
 
 		// load parameters 
 		double beta = param.parameter.get_compressibility(); 
@@ -134,19 +133,25 @@ public:
 		double porosity = param.soil.Porosity();
 
 		// calculate Parameters 
-		double rho_C_eq = porosity * (Sw * rho_w * C_w + Ci * rho_i * C_i) 
-							+ (1 - porosity) * rho_s * C_s; 
+		double rho_C_eq = porosity * (Sw * rho_w * C_w + Ci * rho_i * C_i) + (1 - porosity) * rho_s * C_s; 
+		
+		// derivative of the SFC -- it does not matter which one 
+		// linear version 
+		// double dSFC_dT = (Sw - Sw_old) / (T - T_old + 1.e-24); 
 
+		// analytic version 
+		double dSFC_dT = param.ice.dFreezingCurve_dT((T + T_old) / 2); 
+		
 		// Flow Equation 
 		double tmp = 0.; 
-		tmp -= Sw *  porosity * rho_w * g * beta * (P - P_old) / (*dt);
+		tmp -= Sw * porosity * rho_w * g * beta * (P - P_old) / (*dt);
 		tmp += porosity * (rho_i - rho_w) / rho_w * (Sw - Sw_old) / (*dt); 
 		r.accumulate(lfsu.child(param.index.Eq_flux), 0, tmp * cell_volume);
 
 		// Heat Equation 
 		tmp = 0.; 
 		tmp -= rho_C_eq * (T - T_old) / (*dt); 
-		tmp -= porosity * rho_i * Lf * (Sw - Sw_old) / (*dt); 
+		tmp -= porosity * rho_i * Lf * dSFC_dT * (T - T_old) / (*dt); 
 		r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume);
 	}
 
@@ -196,9 +201,9 @@ public:
 		double T_n = x_n(lfsu_n.child(param.index.PVId_T),0);  
 
 		// gradients 
-		double grad_P = (P_n - P_s ) / distance; 
-		double grad_T = (T_n - T_s ) / distance; 
-		
+		double grad_P = (P_n - P_s) / distance; 
+		double grad_T = (T_n - T_s) / distance; 		
+
 		// compute SVs 
 		double Sw_s = param.ice.FreezingCurve(T_s);
 		double Sw_n = param.ice.FreezingCurve(T_n);
@@ -210,6 +215,12 @@ public:
 		double porosity = param.soil.Porosity();  
 		double g = param.parameter.get_gravitation(); 
 
+		if (normal[0] == -1){
+			double hh = param.parameter.get_hydraulic_gradient(); 
+			grad_P += hh; 
+		} 
+		
+		// std::cout << normal << std::endl; 
 		double rho_w = param.water.Density(); 
 		double rho_i = param.ice.Density(); 
 		double rhow_s = param.soil.Density(); 
@@ -228,28 +239,28 @@ public:
 		double krw_s = param.hydraulicProperty.krw(porosity, Sw_s);
 		double krw_n = param.hydraulicProperty.krw(porosity, Sw_n);
 		
-		double KH_s = krw_s * kint * rho_w * g / mu;
-		double KH_n = krw_n * kint * rho_w * g / mu;
-		double KH = 2 * KH_s * KH_n / (KH_s + KH_n); 
+		double KH_s = krw_s * rho_w * g * kint / mu;
+		double KH_n = krw_n * rho_w * g * kint / mu;
+		double KH = 2 * KH_s * KH_n / (KH_s + KH_n);
+		// double KH = (KH_s + KH_n) / 2;  
+		// double KH = std::min(KH_s, KH_n); 
 
-		double T;   
+		double lambda_eq_s = porosity * (Sw_s * lambda_w + Ci_s * lambda_i) + (1-porosity) * lambda_s; 
+		double lambda_eq_n = porosity * (Sw_n * lambda_w + Ci_n * lambda_i) + (1-porosity) * lambda_s; 
+		double lambda_eq = 2 * lambda_eq_s * lambda_eq_n / (lambda_eq_s + lambda_eq_n); 
+		// double lambda_eq = (lambda_eq_s + lambda_eq_n) / 2; 
+		// double lambda_eq = std::min(lambda_eq_s, lambda_eq_n); 
+
+		double T; 
 		// upwinding with regard to pressure 
 		// grad_P < 0 means flux from x_s to x_n
+		// grad_P = 0 is irrelevant since then the entire term is 0 
 		if(grad_P < 0){
 			T = T_s;
 		} else {
 			T = T_n;
 		}
 		
-		double lambda_eq; 
-		// upwinding with regard to temperature 
-		// grad_T < 0 means flux from x_s to x_n
-		if(grad_T < 0) {
-			lambda_eq = porosity * (Sw_s * lambda_w + Ci_s * lambda_i) + (1-porosity) * lambda_s; 
-		} else {
-			lambda_eq = porosity * (Sw_n * lambda_w + Ci_n * lambda_i) + (1-porosity) * lambda_s; 
-		}
-
 		// FLOW EQUATION 
 		double tmp = 0.; 
 		tmp += grad_P * KH; 
@@ -331,6 +342,7 @@ public:
 		double kint = param.soil.HydraulicPermeability(); 
 		double mu = param.water.DynamicViscosity(); 
 		double krw = param.hydraulicProperty.krw(porosity, Sw);
+
 		double KH = krw * kint * rho_w * g / mu;
 		
 		// thermal conductivity
@@ -346,14 +358,20 @@ public:
 			grad_P = bcvalue[Indices::BC_flux]; 
 		} 
 
+		if (normal[0] == -1){
+			double hh = param.parameter.get_hydraulic_gradient(); 
+			grad_P += hh; 
+		}
+
 		if (bctype[Indices::BC_heat] == Indices::dirichletT) {
 			grad_T = (bcvalue[Indices::BC_heat] - T) / distance;
+			T = bcvalue[Indices::BC_heat]; 
 		} else if (bctype[Indices::BC_heat] == Indices::neumannQ) {
 			grad_T = bcvalue[Indices::BC_heat]; 
 		}
 
 		double tmp = 0.;  
-
+ 
 		// FLOW EQUATION
 		tmp += grad_P * KH; 
 		r.accumulate(lfsu.child(param.index.Eq_flux), 0, +tmp * face_volume); 
@@ -363,7 +381,7 @@ public:
 		// term 1  
 		tmp += lambda_eq * grad_T; 
 		// term 2  
-		tmp +=  rho_w * C_w * T * KH * grad_P; 
+		tmp += rho_w * C_w * T * KH * grad_P; 
 		r.accumulate(lfsu.child(param.index.Eq_heat), 0, +tmp * face_volume); 
 	}
 };
