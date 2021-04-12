@@ -26,7 +26,7 @@ private:
 	double gravitation; 
 
 	// inital values 
-	double T0_ice; 
+	double T0_hs; 
 	double T0; 
 
 	// hydraulic head 
@@ -50,7 +50,7 @@ public:
 		gravitation = ptree.get("parameters.gravitation", (double) 9.81); 
 
 		// initial values 
-		T0_ice = ptree.get("initial.T0_ice", (double) 268.15); 
+		T0_hs = ptree.get("initial.T0_hs", (double) 268.15); 
 		T0 = ptree.get("initial.T0", (double) 278.15);
 		
 		// hydraulic gradient 
@@ -63,11 +63,13 @@ public:
 	}
 
 	double get_P_left() const {
+		// slope case study 
+		// return h0; 
 		return LX * hh + h0; 
 	}
 
-	double get_T0_ice () const {
-		return T0_ice; 
+	double get_T0_hs () const {
+		return T0_hs; 
 	}
 
 	double get_T0 () const {
@@ -161,13 +163,24 @@ public:
 			return false;
 	}
 
-	bool isIceCube(Dune::FieldVector<double, DIMENSION> globalPos /*ndim*/) const {
-		if (globalPos[0] > 0.833333 && globalPos[0] < 1.166667
-				&& globalPos[1] > 0.333333 && globalPos[1] < 0.666667) {
-			return true;
-		} else {
-			return false;
+	bool isHemisphere(Dune::FieldVector<double, DIMENSION> globalPos /*ndim*/) const {
+		double radius = 0.5099; 
+		double dx = globalPos[0] - 0.5;
+		double dy = globalPos[1] + 0.1;
+
+		// lower hemisphere 
+		if(sqrt(dx * dx + dy * dy) < radius){
+			return true; 
 		}
+
+		// upper hemisphere 
+		dy = globalPos[1] - 1.1; 
+		if(sqrt(dx * dx + dy * dy) < radius){
+			return true; 
+		}
+
+		// no hemisphere 
+		return false; 
 	}
 };
 
@@ -330,14 +343,14 @@ public:
 	}
 
 	double FreezingCurve(double T) const {
-		double Tf = FreezingPointTemperature(); 
 		double Sw_res = 0.05; 
 		double W = 0.5; 
 		// double W = 0.6; 
 		// double W = 0.05; 
 		// double W = 1.87; 
 
-		double tmp = ((T - FreezingPointTemperature()) / W) * ((T - FreezingPointTemperature()) / W); 
+		double tmp = (T - FreezingPointTemperature()) / W; 
+		tmp *= tmp; 
 		double SFC = Sw_res + (1 - Sw_res) * std::exp(-tmp); 
 
 		if (T >= FreezingPointTemperature()){

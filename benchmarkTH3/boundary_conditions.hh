@@ -27,11 +27,11 @@ public:
 		if (property.mesh.isTopBoundary(xglobal)) {
 			// zero conductive flux and zero flux 
 			bct[Indices::BC_flux] = 1;
-			bct[Indices::BC_heat] = 1;
+			bct[Indices::BC_heat] = 0;
 		} else if (property.mesh.isBottomBoundary(xglobal)) {
 			// zero conductive flux and zero flux 
 			bct[Indices::BC_flux] = 1;
-			bct[Indices::BC_heat] = 1;
+			bct[Indices::BC_heat] = 0;
 		} else if (property.mesh.isLeftBoundary(xglobal)) {
 			// T_in and imposed Head H0 + dH  
 			bct[Indices::BC_flux] = 0;
@@ -55,10 +55,10 @@ public:
 
 		if (property.mesh.isTopBoundary(xglobal)) {
 			bcv[Indices::BC_flux] = 0.;
-			bcv[Indices::BC_heat] = 0.;
+			bcv[Indices::BC_heat] = property.parameter.get_T0_hs();
 		} else if (property.mesh.isBottomBoundary(xglobal)) {
 			bcv[Indices::BC_flux] = 0.;
-			bcv[Indices::BC_heat] = 0.;
+			bcv[Indices::BC_heat] = property.parameter.get_T0_hs(); 
 		} else if (property.mesh.isLeftBoundary(xglobal)) {
 			bcv[Indices::BC_flux] = property.parameter.get_P_left();
 			bcv[Indices::BC_heat] = property.parameter.get_T0(); 

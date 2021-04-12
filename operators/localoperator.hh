@@ -215,11 +215,6 @@ public:
 		double porosity = param.soil.Porosity();  
 		double g = param.parameter.get_gravitation(); 
 
-		if (normal[0] == -1){
-			double hh = param.parameter.get_hydraulic_gradient(); 
-			grad_P += hh; 
-		} 
-		
 		// std::cout << normal << std::endl; 
 		double rho_w = param.water.Density(); 
 		double rho_i = param.ice.Density(); 
@@ -241,13 +236,13 @@ public:
 		
 		double KH_s = krw_s * rho_w * g * kint / mu;
 		double KH_n = krw_n * rho_w * g * kint / mu;
-		double KH = 2 * KH_s * KH_n / (KH_s + KH_n);
+		double KH = KH_s * KH_n / (KH_s + KH_n);
 		// double KH = (KH_s + KH_n) / 2;  
 		// double KH = std::min(KH_s, KH_n); 
 
 		double lambda_eq_s = porosity * (Sw_s * lambda_w + Ci_s * lambda_i) + (1-porosity) * lambda_s; 
 		double lambda_eq_n = porosity * (Sw_n * lambda_w + Ci_n * lambda_i) + (1-porosity) * lambda_s; 
-		double lambda_eq = 2 * lambda_eq_s * lambda_eq_n / (lambda_eq_s + lambda_eq_n); 
+		double lambda_eq = lambda_eq_s * lambda_eq_n / (lambda_eq_s + lambda_eq_n); 
 		// double lambda_eq = (lambda_eq_s + lambda_eq_n) / 2; 
 		// double lambda_eq = std::min(lambda_eq_s, lambda_eq_n); 
 
@@ -357,11 +352,6 @@ public:
 		} else if (bctype[Indices::BC_flux] == Indices::neumannf) {
 			grad_P = bcvalue[Indices::BC_flux]; 
 		} 
-
-		if (normal[0] == -1){
-			double hh = param.parameter.get_hydraulic_gradient(); 
-			grad_P += hh; 
-		}
 
 		if (bctype[Indices::BC_heat] == Indices::dirichletT) {
 			grad_T = (bcvalue[Indices::BC_heat] - T) / distance;
