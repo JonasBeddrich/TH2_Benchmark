@@ -162,8 +162,8 @@ void driver(const GV &gv, 				// GridView
 
 	pdesolver.setReassembleThreshold(0.0);
 	pdesolver.setVerbosityLevel(2);
-	pdesolver.setReduction(1e-6);
-	pdesolver.setMinLinearReduction(1e-4);
+	pdesolver.setReduction(1e-6); // 1e-6
+	pdesolver.setMinLinearReduction(1e-4); // 1e-4
 	pdesolver.setMaxIterations(ptree.get("newton.max_iterations", (int) 15));
 	pdesolver.setForceIteration(true);
 	pdesolver.setAbsoluteLimit(ptree.get("newton.abs_error", (double) 1.e-3));

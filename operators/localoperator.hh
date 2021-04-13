@@ -138,14 +138,13 @@ public:
 		// derivative of the SFC -- it does not matter which one 
 		// linear version 
 		// double dSFC_dT = (Sw - Sw_old) / (T - T_old + 1.e-24); 
-
 		// analytic version 
-		double dSFC_dT = param.ice.dFreezingCurve_dT((T + T_old) / 2); 
+		double dSFC_dT = param.ice.dFreezingCurve_dT(T); 
 		
 		// Flow Equation 
 		double tmp = 0.; 
 		tmp -= Sw * porosity * rho_w * g * beta * (P - P_old) / (*dt);
-		tmp += porosity * (rho_i - rho_w) / rho_w * (Sw - Sw_old) / (*dt); 
+		tmp += porosity * (rho_i - rho_w) / rho_w * dSFC_dT * (T - T_old) / (*dt); 
 		r.accumulate(lfsu.child(param.index.Eq_flux), 0, tmp * cell_volume);
 
 		// Heat Equation 
@@ -200,7 +199,7 @@ public:
 		double T_s = x_s(lfsu_s.child(param.index.PVId_T),0); 
 		double T_n = x_n(lfsu_n.child(param.index.PVId_T),0);  
 
-		// gradients 
+		// gradients * n 
 		double grad_P = (P_n - P_s) / distance; 
 		double grad_T = (T_n - T_s) / distance; 		
 
@@ -215,10 +214,9 @@ public:
 		double porosity = param.soil.Porosity();  
 		double g = param.parameter.get_gravitation(); 
 
-		// std::cout << normal << std::endl; 
 		double rho_w = param.water.Density(); 
 		double rho_i = param.ice.Density(); 
-		double rhow_s = param.soil.Density(); 
+		double rho_s = param.soil.Density(); 
 
 		double C_w = param.water.Hp();
 
@@ -236,13 +234,13 @@ public:
 		
 		double KH_s = krw_s * rho_w * g * kint / mu;
 		double KH_n = krw_n * rho_w * g * kint / mu;
-		double KH = KH_s * KH_n / (KH_s + KH_n);
+		double KH = 2 * KH_s * KH_n / (KH_s + KH_n);
 		// double KH = (KH_s + KH_n) / 2;  
 		// double KH = std::min(KH_s, KH_n); 
 
 		double lambda_eq_s = porosity * (Sw_s * lambda_w + Ci_s * lambda_i) + (1-porosity) * lambda_s; 
 		double lambda_eq_n = porosity * (Sw_n * lambda_w + Ci_n * lambda_i) + (1-porosity) * lambda_s; 
-		double lambda_eq = lambda_eq_s * lambda_eq_n / (lambda_eq_s + lambda_eq_n); 
+		double lambda_eq = 2 * lambda_eq_s * lambda_eq_n / (lambda_eq_s + lambda_eq_n); 
 		// double lambda_eq = (lambda_eq_s + lambda_eq_n) / 2; 
 		// double lambda_eq = std::min(lambda_eq_s, lambda_eq_n); 
 
