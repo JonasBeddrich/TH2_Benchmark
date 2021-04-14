@@ -73,8 +73,7 @@ public:
 			// calculate Parameters 
 			double rhoC_eq = porosity * (Sw * rho_w * C_w + Ci * rho_i * C_i) + (1 - porosity) * rho_s * C_s; 
 
-			// CURRENTLY NOT IN USE 
-			
+			// CURRENTLY NOT IN USE 			
 			// r.accumulate(lfsu.child(param.index.Eq_heat), 0, tmp*cell_volume); 
 	}	
 };

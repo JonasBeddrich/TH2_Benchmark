@@ -170,8 +170,7 @@ void driver(const GV &gv, 				// GridView
 
 	//	SELECT TIME-STEPPER
 	Dune::PDELab::ImplicitEulerParameter<double> method;
-	Dune::PDELab::OneStepMethod<double, IGO, PDESOLVER, U, U> osm(method, igo,
-			pdesolver);
+	Dune::PDELab::OneStepMethod<double, IGO, PDESOLVER, U, U> osm(method, igo, pdesolver);
 	osm.setVerbosityLevel(2);
 
 	/************************************************************************************************/

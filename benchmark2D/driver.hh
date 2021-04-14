@@ -139,15 +139,15 @@ void driver(const GV &gv, 				// GridView
 		std::cout << jac.patternStatistics() << std::endl;
 	}
 
-	using GOTLOP = Dune::PDELab::GridOperator< GFS, GFS, TLOP, MBE, double, double, double, CC, CC >;
-	GOTLOP gotlop(gfs, cc, gfs, cc, tlop, mbe);
+	// using GOTLOP = Dune::PDELab::GridOperator< GFS, GFS, TLOP, MBE, double, double, double, CC, CC >;
+	// GOTLOP gotlop(gfs, cc, gfs, cc, tlop, mbe);
 
-	using IGO = Dune::PDELab::OneStepGridOperator< GOLOP, GOTLOP>;
-	IGO igo(golop, gotlop);
+	// using IGO = Dune::PDELab::OneStepGridOperator< GOLOP, GOTLOP>;
+	// IGO igo(golop, gotlop);
 
 	// SELECT A LINEAR SOLVER BACKEND
 #ifdef PARALLEL
-		using LS = Dune::PDELab::ISTLBackend_BCGS_AMG_SSOR<IGO>; //works
+		using LS = Dune::PDELab::ISTLBackend_BCGS_AMG_SSOR<GOLOP>; //works
 		LS ls(gfs,100,1,false,true);
 #else
 	using LS = Dune::PDELab::ISTLBackend_SEQ_SuperLU;
@@ -155,8 +155,8 @@ void driver(const GV &gv, 				// GridView
 #endif
 
 	//	SELECT SOLVER FOR NON-LINEAR PROBLEM
-	using PDESOLVER = Dune::PDELab::Newton< IGO, LS, U >;
-	PDESOLVER pdesolver(igo, ls);
+	using PDESOLVER = Dune::PDELab::Newton< GOLOP, LS, U >;
+	PDESOLVER pdesolver(golop, ls);
 	// 	select control parameters for non-linear PDE-solver
 	// pdesolver.setLineSearchStrategy(PDESOLVER::Strategy::noLineSearch);
 
@@ -169,10 +169,10 @@ void driver(const GV &gv, 				// GridView
 	pdesolver.setAbsoluteLimit(ptree.get("newton.abs_error", (double) 1.e-3));
 
 	//	SELECT TIME-STEPPER
-	Dune::PDELab::ImplicitEulerParameter<double> method;
-	Dune::PDELab::OneStepMethod<double, IGO, PDESOLVER, U, U> osm(method, igo,
-			pdesolver);
-	osm.setVerbosityLevel(2);
+	// Dune::PDELab::ImplicitEulerParameter<double> method;
+	// Dune::PDELab::OneStepMethod<double, IGO, PDESOLVER, U, U> osm(method, igo,
+	// 		pdesolver);
+	// osm.setVerbosityLevel(2);
 
 	/************************************************************************************************/
 	//  POST-PROCESS:
@@ -248,10 +248,12 @@ void driver(const GV &gv, 				// GridView
 				std::cout << "****************************" << std::endl;
 			}
 
-			osm.apply(time, dt, u_old, u_new);
+			pdesolver.apply(u_new); 
 
-			newton_iterations = osm.getPDESolver().result().iterations;
+			// osm.apply(time, dt, u_old, u_new);
 
+			// newton_iterations = osm.getPDESolver().result().iterations;
+			newton_iterations = 0; 
 			exceptionCaught = false;
 
 		} catch (Dune::Exception &e) {
