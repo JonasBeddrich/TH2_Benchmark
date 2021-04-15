@@ -266,7 +266,7 @@ public:
 		// term 1  
 		tmp += lambda_eq * grad_T; 
 		// term 2  
-		tmp +=  rho_w * C_w * T * KH * grad_P; 
+		tmp +=  rho_w * C_w * (T - 273.15) * KH * grad_P; 
 
 		r_s.accumulate(lfsu_s.child(param.index.Eq_heat), 0, +tmp * face_volume);
 		r_n.accumulate(lfsu_n.child(param.index.Eq_heat), 0, -tmp * face_volume);
@@ -369,7 +369,7 @@ public:
 		// term 1  
 		tmp += lambda_eq * grad_T; 
 		// term 2  
-		tmp += rho_w * C_w * T * KH * grad_P; 
+		tmp += rho_w * C_w * (T-273.15) * KH * grad_P; 
 		r.accumulate(lfsu.child(param.index.Eq_heat), 0, +tmp * face_volume); 
 	}
 };

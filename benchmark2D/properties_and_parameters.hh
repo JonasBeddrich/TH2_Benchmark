@@ -45,6 +45,7 @@ public:
 		// Grid 
 		LX = ptree.get("grid.yasp.LX", (double) 3.); 
 		NX = ptree.get("grid.yasp.NX", (double) 300.); 
+
 		// parameters 
 		beta = ptree.get("parameters.beta", (double) 1.e-8); 
 		gravitation = ptree.get("parameters.gravitation", (double) 9.81); 
@@ -333,9 +334,6 @@ public:
 		double Tf = FreezingPointTemperature(); 
 		double Sw_res = 0.05; 
 		double W = 0.5; 
-		// double W = 0.6; 
-		// double W = 0.05; 
-		// double W = 1.87; 
 
 		double tmp = ((T - FreezingPointTemperature()) / W) * ((T - FreezingPointTemperature()) / W); 
 		double SFC = Sw_res + (1 - Sw_res) * std::exp(-tmp); 
@@ -348,16 +346,17 @@ public:
 	}
 
 	double dFreezingCurve_dT(double T) const {
+		double Tf = FreezingPointTemperature(); 
 		double Sw_res = 0.05; 
 		double W = 0.5; 
 		
-		double tmp = ((T - FreezingPointTemperature()) / W ) * ((T - FreezingPointTemperature()) / W ); 
-		double dSFC_dT = 2 * (1-Sw_res) * std::exp(-tmp) * (T - FreezingPointTemperature()) / W / W; 
+		double tmp = ((T - Tf) / W ) * ((T - Tf) / W ); 
+		double dSFC_dT = - 2 * (1 - Sw_res) * std::exp(-tmp) * (T - Tf) / (W * W); 
 		
 		if (T >= FreezingPointTemperature()){
 			return 0; 
 		} else {
-			return - dSFC_dT; 
+			return dSFC_dT; 
 		}
 	}
 };
