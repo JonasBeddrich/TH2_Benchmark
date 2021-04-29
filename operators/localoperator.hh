@@ -179,6 +179,7 @@ public:
 		auto outside_cell_center_local = ref_el_outside.position(0, 0);
 		auto inside_cell_center_global = geo_inside.center();
 		auto outside_cell_center_global = geo_outside.center();
+		auto cell_volume = geo_inside.volume(); 
 
 		// distance of cell centers
 		auto d = outside_cell_center_global;
@@ -292,6 +293,7 @@ public:
 		auto inside_cell_center_local = ref_el_inside.position(0, 0);
 		auto outside_cell_center_local = inside_cell_center_local;
 		auto inside_cell_center_global = geo_inside.center();
+		auto cell_volume = geo_inside.volume(); 
 
 		// face geometry
 		auto ref_el = referenceElement(geo);

@@ -41,8 +41,8 @@
 
 #include"csv_reader.hh"
 #include"../include_dune.hh"
-#include"benchmark2D/include_problem.hh"
-// #include"benchmarkTH3/include_problem.hh"
+#include"TH2/include_problem.hh"
+// #include"TH3/include_problem.hh"
 
 /*********************************************************************/
 
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 		}
 
 		// PROBLEM PATH NAME
-		std::string PROBLEM_PATH = DUNE_PATH + "SoilFreezing/src/TH2_Benchmark/";
+		std::string PROBLEM_PATH = DUNE_PATH + "SoilFreezing/src/Benchmark_Model/";
 		PROBLEM_PATH += PROBLEM;
 		PROBLEM_PATH += "/";
 		
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
 		std::string INPUT_PATH = PROBLEM_PATH + "inputs/";
 
 		// OUTPUT PATH NAME
-		std::string OUTPUT_PATH = DUNE_PATH + "SoilFreezing/src/outputs/TH2_Benchmark/";
+		std::string OUTPUT_PATH = DUNE_PATH + "SoilFreezing/src/outputs/Benchmark_Model/";
 		OUTPUT_PATH += PROBLEM;
 		OUTPUT_PATH += "/";
 

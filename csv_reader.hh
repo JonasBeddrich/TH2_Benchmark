@@ -12,7 +12,7 @@ private:
 	std::vector<double> yData;
 	int size;
 	
-	
+
 public:
 	linear_interpolator(){}
 	
@@ -64,6 +64,7 @@ private:
 public:
 	csv_reader() {
 	}
+
 	// This one excepts a non double first line 
 	std::vector<double> read_1D_axis(std::string filename) {
 		std::vector<double> result;
@@ -89,16 +90,23 @@ public:
 		return result;
 	}
 
-	std::vector<std::vector<double>> read_2D_matrix(std::string filename) {
+	std::vector<std::vector<double>> read_2D_matrix(auto & filename) {
+		std::cout << "There 1" << std::endl; 
 		std::vector<std::vector<double>> result;
+		std::cout << "There 2" << std::endl; 
 		std::ifstream myFile(filename);
 		std::string line; 
-
+		std::cout << "There 3" << std::endl; 
+		
 		if (!myFile.is_open())
+			std::cout << "not open" << std::endl; 
 			throw std::runtime_error("Could not open file: " + filename);
 		if (!myFile.good())
+			std::cout << "not good" << std::endl; 
 			throw std::runtime_error("File could not be read: " + filename);
 		
+		std::cout << "csv 2D" << std::endl; 
+
 		while (std::getline(myFile, line)) {
 			std::stringstream lineStream(line);
 			std::string cell;
