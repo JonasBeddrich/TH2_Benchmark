@@ -41,8 +41,8 @@
 
 #include"csv_reader.hh"
 #include"../include_dune.hh"
-#include"TH2/include_problem.hh"
-// #include"TH3/include_problem.hh"
+// #include"TH2/include_problem.hh"
+#include"TH3/include_problem.hh"
 
 /*********************************************************************/
 
